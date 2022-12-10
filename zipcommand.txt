@@ -1,0 +1,2 @@
+zip -r rum.zip rum -x "rum/*/Cargo.lock" "rum/*/target/**" "rum/*/.git/**"
+
