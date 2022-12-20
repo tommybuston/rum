@@ -2,7 +2,7 @@ use crate::um_state::{State};
 use std::io;
 use std::io::Read;
 use crate::um_io::{print_rc, user_in, user_in_empty};
-use crate::reg_math::{cmov, add, mult, div, nand};
+//use crate::reg_math::{cmov, add, mult, div, nand};
 use crate::segment_ops::{seg_load,seg_store,load_program,load_value,map_segment,unmap_segment};
 
 pub struct Field { 
@@ -16,6 +16,7 @@ static RC: Field = Field {width: 3, lsb: 0};
 static RL: Field = Field {width: 3, lsb: 25}; 
 static VL: Field = Field {width: 25, lsb: 0}; 
 static OP: Field = Field {width: 4, lsb: 28};
+static MOD_NUM: u64 = 2_u64.pow(32);
 
 /// Protects the desired word from being erased in get
 ///
@@ -49,7 +50,11 @@ pub fn run_um(input: Option<String>){
         match current_op {
             //cmov
             0 => {
-                cmov(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction))
+                //cmov(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction))
+                if current_state.registers[get(&RC, instruction) as usize] != 0 {
+                        current_state.registers[get(&RA, instruction) as usize] = 
+                                        current_state.registers[get(&RB, instruction) as usize];
+                }
             }
             //seg load
             1 => {
@@ -60,16 +65,30 @@ pub fn run_um(input: Option<String>){
                                         get(&RC, instruction) );
             }
             3 => {
-                add(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                //add(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                current_state.registers[get(&RA, instruction) as usize] = 
+                                                (current_state.registers[get(&RB, instruction) as usize] as u64 + 
+                                                current_state.registers[get(&RC, instruction) as usize] as u64
+                                                % MOD_NUM) as u32;
             }
             4 => {
-                mult(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                //mult(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                current_state.registers[get(&RA, instruction) as usize] = 
+                                                (current_state.registers[get(&RB, instruction) as usize] as u64 * 
+                                                current_state.registers[get(&RC, instruction) as usize] as u64
+                                                % MOD_NUM) as u32;
             }
             5 => {
-                div(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                //div(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                current_state.registers[get(&RA, instruction) as usize] = 
+                                                current_state.registers[get(&RB, instruction) as usize] / 
+                                                current_state.registers[get(&RC, instruction) as usize];
             }
             6 => {
-                nand(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                //nand(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                current_state.registers[get(&RA, instruction) as usize] = 
+                                                !(current_state.registers[get(&RB, instruction) as usize] & 
+                                                 current_state.registers[get(&RC, instruction) as usize]);
             }
             7 => {
                 break;

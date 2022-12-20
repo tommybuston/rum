@@ -1,4 +1,5 @@
 use crate::um_state::{State};
+use std::mem;
     
     /// Loads an integer into rA from segmented memory
     ///
@@ -37,8 +38,8 @@ use crate::um_state::{State};
     /// * 'rb' - register offset from Field RB
     /// * 'rc' - register offset from Field RC
     pub fn load_program (current_state: &mut State, rb: u32, rc: u32) {
-        current_state.segment_memory[0] = current_state.segment_memory
-                                            [current_state.registers[rb as usize] as usize].clone();
+        current_state.segment_memory[0] =  mem::take(&mut current_state.segment_memory
+                                            [current_state.registers[rb as usize] as usize]);
         current_state.program_counter = current_state.registers[rc as usize];
     }
     
@@ -83,6 +84,6 @@ use crate::um_state::{State};
     /// * 'current_state' - state of the UM
     /// * 'rc' - value to load into reg
     pub fn unmap_segment (current_state: &mut State, rc: u32) {
-        //current_state.segment_memory[current_state.registers[rc as usize] as usize].clear();
+        current_state.segment_memory[current_state.registers[rc as usize] as usize].clear();
         current_state.unmapped_segments.push(current_state.registers[rc as usize]);
     }
