@@ -55,14 +55,17 @@ pub fn run_um(input: Option<String>){
                         current_state.registers[get(&RA, instruction) as usize] = 
                                         current_state.registers[get(&RB, instruction) as usize];
                 }
+                current_state.program_counter += 1;
             }
             //seg load
             1 => {
                 seg_load(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
+                current_state.program_counter += 1;
             }
             2 => {
                 seg_store(&mut current_state, get(&RA, instruction), get(&RB, instruction), 
                                         get(&RC, instruction) );
+                current_state.program_counter += 1;
             }
             3 => {
                 //add(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
@@ -70,6 +73,7 @@ pub fn run_um(input: Option<String>){
                                                 (current_state.registers[get(&RB, instruction) as usize] as u64 + 
                                                 current_state.registers[get(&RC, instruction) as usize] as u64
                                                 % MOD_NUM) as u32;
+                current_state.program_counter += 1;
             }
             4 => {
                 //mult(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
@@ -77,30 +81,37 @@ pub fn run_um(input: Option<String>){
                                                 (current_state.registers[get(&RB, instruction) as usize] as u64 * 
                                                 current_state.registers[get(&RC, instruction) as usize] as u64
                                                 % MOD_NUM) as u32;
+                current_state.program_counter += 1;
             }
             5 => {
                 //div(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
                 current_state.registers[get(&RA, instruction) as usize] = 
                                                 current_state.registers[get(&RB, instruction) as usize] / 
                                                 current_state.registers[get(&RC, instruction) as usize];
+                current_state.program_counter += 1;
             }
             6 => {
                 //nand(&mut current_state, get(&RA, instruction), get(&RB, instruction), get(&RC, instruction) );
                 current_state.registers[get(&RA, instruction) as usize] = 
                                                 !(current_state.registers[get(&RB, instruction) as usize] & 
                                                  current_state.registers[get(&RC, instruction) as usize]);
+                current_state.program_counter += 1;
             }
             7 => {
                 break;
             }
             8 => {
                 map_segment(&mut current_state, get(&RB, instruction), get(&RC, instruction) );
+                current_state.program_counter += 1;
             }
             9 => {
                 unmap_segment(&mut current_state, get(&RC, instruction) );
+                current_state.program_counter += 1;
+
             }
             10 => {
                 print_rc( &current_state, get(&RC, instruction) );
+                current_state.program_counter += 1;
             }
             11 => {
                 let mut buffer: [u8; 1] = [0; 1];
@@ -117,21 +128,23 @@ pub fn run_um(input: Option<String>){
                         panic!();
                     }
                 }
-
+                current_state.program_counter += 1;
             }
             12 => {
                 load_program(&mut current_state, get(&RB, instruction), get(&RC, instruction));
             }
             13 => {
                 load_value(&mut current_state, get(&RL, instruction), get(&VL, instruction));
+                current_state.program_counter += 1;
             }
             _ => { panic!() }            
 
         }
+        /*
         if current_op != 12 {
             current_state.program_counter += 1;
         }
-
+        */
     } 
 
 }
